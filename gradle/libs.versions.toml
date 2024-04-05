@@ -1,0 +1,32 @@
+[versions]
+minSdk = "21"
+compileSdk = "34"
+agp = "8.1.4"
+kotlin = "1.9.22"
+kotlin-coroutines-test = "1.8.0"
+core-ktx = "1.12.0"
+compose-activity = "1.8.2"
+compose-compiler = "1.5.10"
+compose-foundation = "1.6.5"
+compose-ui = "1.6.5"
+compose-runtime = "1.6.5"
+material3 = "1.2.1"
+mavenPublish = "0.28.0"
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
+
+[libraries]
+androidx-core = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+compose-activity = { group = "androidx.activity", name = "activity-compose", version.ref = "compose-activity" }
+compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose-foundation" }
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose-ui" }
+compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "compose-runtime" }
+kotlin-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlin-coroutines-test" }
+material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+
+junit = "junit:junit:4.13.2"
+truth = "com.google.truth:truth:1.4.2"
