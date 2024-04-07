@@ -1,17 +1,17 @@
 package me.rmyhal.contentment
 
 /**
- * Defaults used in [ContentLoadingIndicatorContainer] and [ContentLoadingContainer].
+ * Defaults used in [ContentLoadingIndicatorContainer].
  */
 object ContentLoadingDefaults {
 
   /**
-   * Minimum time to show the progress bar in milliseconds.
+   * Minimum time to show the indicator in milliseconds.
    */
   const val MinShowTimeMillis = 500L
 
   /**
-   * Delay time to show the progress bar in milliseconds.
+   * Delay time to show the indicator in milliseconds.
    */
   const val DelayMillis = 500L
 

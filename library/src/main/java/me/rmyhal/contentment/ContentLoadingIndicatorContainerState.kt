@@ -15,7 +15,7 @@ internal class ContentLoadingIndicatorContainerState(
   private val scope: CoroutineScope,
   private val minShowTimeMillis: Long,
   private val delayMillis: Long,
-   val currentTimeMillis: () -> Long = { SystemClock.elapsedRealtime() },
+  val currentTimeMillis: () -> Long = { SystemClock.elapsedRealtime() },
 ) {
 
   init {
@@ -43,9 +43,7 @@ internal class ContentLoadingIndicatorContainerState(
 
   fun hide() {
     containerValue = Hidden
-    if (effectiveContainerValue.value is Hidden) {
-      return
-    }
+    if (effectiveContainerValue.value is Hidden) return
     val diff = currentTimeMillis() - startTimeMillis
     if (diff >= minShowTimeMillis || startTimeMillis == -1L) {
       effectiveContainerValue.value = Hidden
