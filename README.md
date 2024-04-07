@@ -1,5 +1,14 @@
-```
-implementation "me.rmyhal.contentment:contentment:1.0.0"
+## `contentment`
+![Maven Central Version](https://img.shields.io/maven-central/v/me.rmyhal.contentment/contentment?style=flat&logo=sonatype)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/rmyhal/contentment/checks.yml)
+
+Library provides a Jetpack Compose adaptation of the native [ContentLoadingProgressBar](https://developer.android.com/reference/androidx/core/widget/ContentLoadingProgressBar), 
+designed to seamlessly integrate loading indicators and enhance the user experience during asynchronous operations.
+
+## Usage
+
+```groovy
+implementation "me.rmyhal.contentment:contentment:<version>"
 ```
 
 ## License 
