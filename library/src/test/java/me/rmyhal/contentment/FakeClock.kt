@@ -1,6 +1,6 @@
 package me.rmyhal.contentment
 
-class FakeClock(
+internal class FakeClock(
   initialTimeMillis: Long
 ) {
 
