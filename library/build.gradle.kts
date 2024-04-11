@@ -20,6 +20,9 @@ android {
   java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(11))
   }
+  kotlinOptions {
+    freeCompilerArgs += "-Xexplicit-api=strict"
+  }
   lint {
     abortOnError = true
   }
