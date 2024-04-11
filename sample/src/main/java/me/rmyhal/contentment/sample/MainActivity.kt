@@ -13,10 +13,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -34,9 +37,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import me.rmyhal.contentment.ContentLoadingIndicatorContainer
+import me.rmyhal.contentment.ContentLoadingIndicator
+import me.rmyhal.contentment.Contentment
+import me.rmyhal.contentment.sample.DemoComponent.ContentWithIndicator
+import me.rmyhal.contentment.sample.DemoComponent.IndicatorOnly
 import kotlin.math.roundToLong
-
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,9 +49,14 @@ class MainActivity : ComponentActivity() {
     setContent {
       MaterialTheme {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-          Content(
-            modifier = Modifier.padding(innerPadding)
-          )
+          Box(
+            modifier = Modifier
+              .fillMaxSize()
+              .padding(innerPadding),
+            contentAlignment = Alignment.Center,
+          ) {
+            DemoContent()
+          }
         }
       }
     }
@@ -54,32 +64,33 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Content(modifier: Modifier = Modifier) {
-  Box(
-    modifier = modifier
-      .fillMaxSize(),
-    contentAlignment = Alignment.Center
-  ) {
-    Demo()
-
-  }
-}
-
-@Composable
-private fun Demo() {
+private fun DemoContent() {
   Column(
     modifier = Modifier
       .fillMaxSize()
       .padding(16.dp)
   ) {
+    var demoComponent by remember { mutableStateOf<DemoComponent>(ContentWithIndicator) }
     var minShowTimeMillis by remember { mutableLongStateOf(500L) }
     var delayMillis by remember { mutableLongStateOf(500L) }
-    var autoHideMillis by remember { mutableLongStateOf(700L) }
+    var autoHideMillis by remember { mutableLongStateOf(1000L) }
     var autoHideEnabled by remember { mutableStateOf(true) }
-    var isLoading by remember { mutableStateOf(false) }
+    var uiState by remember { mutableStateOf<UiState>(UiState.Loading) }
+    val loadedState by remember { mutableStateOf(UiState.Loaded("Your fancy content")) }
     val scope = rememberCoroutineScope()
 
-    Text(text = "ContentLoadingIndicatorContainer")
+    // single-shot auto-hide
+    LaunchedEffect(key1 = Unit) {
+      delay(autoHideMillis)
+      uiState = loadedState
+    }
+
+    Text(text = "Contentment Demo")
+    DemoComponentSelector(
+      modifier = Modifier.padding(top = 12.dp),
+      selectedComponent = demoComponent,
+      onSelect = { demoComponent = it }
+    )
     Spacer(modifier = Modifier.height(16.dp))
     DemoSlider(
       defaultValue = 5f,
@@ -92,7 +103,7 @@ private fun Demo() {
       onValueChanged = { delayMillis = it },
     )
     DemoSlider(
-      defaultValue = 7f,
+      defaultValue = 10f,
       label = {
         Checkbox(
           checked = autoHideEnabled,
@@ -107,49 +118,115 @@ private fun Demo() {
       modifier = Modifier
         .weight(1f)
         .fillMaxWidth(),
+      contentAlignment = Alignment.Center,
     ) {
-      ContentLoadingIndicatorContainer(
-        loading = isLoading,
-        modifier = Modifier.align(Alignment.Center),
-        minShowTimeMillis = minShowTimeMillis,
-        delayMillis = delayMillis,
-      ) {
-        Column(
-          horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-          CircularProgressIndicator(
-            modifier = Modifier
-              .size(50.dp)
-              .align(Alignment.End),
-          )
+      when (demoComponent) {
+        is IndicatorOnly -> {
+          ContentLoadingIndicator(
+            loading = uiState.isLoading()
+          ) {
+            IndicatorContent()
+          }
+        }
 
-          var displaying by remember { mutableLongStateOf(0L) }
-          LaunchedEffect(key1 = isLoading) {
-            while (true) {
-              delay(100L)
-              displaying += 100L
+        is ContentWithIndicator -> {
+          Contentment(
+            minShowTimeMillis = minShowTimeMillis,
+            delayMillis = delayMillis,
+          ) {
+            when (val state = uiState) {
+              is UiState.Loading -> indicator { IndicatorContent() }
+              is UiState.Loaded -> content { Text(text = state.data) }
             }
           }
-          Text(text = "$displaying")
         }
       }
     }
     Button(
       modifier = Modifier.align(Alignment.CenterHorizontally),
       onClick = {
-        isLoading = !isLoading
-        if (isLoading && autoHideEnabled) {
+        uiState = if (uiState.isLoading()) loadedState else UiState.Loading
+        if (uiState.isLoading() && autoHideEnabled) {
           scope.launch {
             delay(autoHideMillis)
-            isLoading = false
+            uiState = loadedState
           }
         }
       },
     ) {
-      val text = if (isLoading) "Hide" else "Show"
+      val text = if (uiState.isLoading()) "Stop" else "Start"
       Text(text = text)
     }
+  }
+}
+
+@Composable
+fun DemoComponentSelector(
+  modifier: Modifier = Modifier,
+  selectedComponent: DemoComponent,
+  onSelect: (DemoComponent) -> Unit,
+) {
+  Row(
+    modifier = modifier
+      .fillMaxWidth()
+      .selectableGroup(),
+    horizontalArrangement = Arrangement.spacedBy(12.dp),
+  ) {
+    DemoComponentRow(
+      selected = selectedComponent == ContentWithIndicator,
+      component = ContentWithIndicator,
+      onSelect = onSelect,
+    )
+    DemoComponentRow(
+      selected = selectedComponent == IndicatorOnly,
+      component = IndicatorOnly,
+      onSelect = onSelect,
+    )
+  }
+}
+
+@Composable
+fun DemoComponentRow(
+  selected: Boolean,
+  component: DemoComponent,
+  onSelect: (DemoComponent) -> Unit,
+) {
+  Row(
+    modifier = Modifier
+      .selectable(
+        selected = selected,
+        onClick = { onSelect(component) },
+      ),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    RadioButton(
+      selected = selected,
+      onClick = null,
+    )
+    Text(text = component.toString())
+  }
+}
+
+@Composable
+private fun IndicatorContent() {
+  Column(
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(10.dp),
+  ) {
+    CircularProgressIndicator(
+      modifier = Modifier
+        .size(50.dp)
+        .align(Alignment.End),
+    )
+
+    var displaying by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(key1 = Unit) {
+      while (true) {
+        delay(75)
+        displaying += 75L
+      }
+    }
+    Text(text = "$displaying")
   }
 }
 
@@ -175,4 +252,16 @@ private fun DemoSlider(
     onValueChange = { sliderPosition = it },
     onValueChangeFinished = { onValueChanged(sliderPosition.roundToLong() * 100L) }
   )
+}
+
+sealed interface DemoComponent {
+  data object IndicatorOnly : DemoComponent
+  data object ContentWithIndicator : DemoComponent
+}
+
+sealed interface UiState {
+  data class Loaded(val data: String) : UiState
+  data object Loading : UiState
+
+  fun isLoading() = this is Loading
 }
