@@ -47,6 +47,8 @@ fun ScreenContent(uiState: UiState) {
     when (uiState) {
       is Loading -> indicator { CircularProgressIndicator() }
       is Loaded -> content { ScreenContent(uiState) }
+      // multiple content's are possible too
+      is Failed -> content { FailedContent(uiState) }
     }
   }  
 }
