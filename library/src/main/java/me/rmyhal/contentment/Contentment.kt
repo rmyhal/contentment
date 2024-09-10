@@ -30,7 +30,7 @@ public fun Contentment(
     builder = builder,
   )
   when (val value = state) {
-    is ContentmentState.Visible -> value.content()
+    is ContentmentState.Visible -> value.renderable()
     is ContentmentState.Undefined -> Unit
   }
 }

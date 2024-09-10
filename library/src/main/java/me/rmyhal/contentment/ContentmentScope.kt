@@ -58,9 +58,12 @@ public class ContentmentScope internal constructor(
 }
 
 internal sealed interface ContentmentState {
-  sealed class Visible(open val content: @Composable () -> Unit): ContentmentState {
-    data class Indicator(override val content: @Composable () -> Unit): Visible(content)
-    data class Content(override val content: @Composable () -> Unit): Visible(content)
+  sealed interface Visible : ContentmentState {
+    val renderable: @Composable () -> Unit
+
+    data class Indicator(override val renderable: @Composable () -> Unit) : Visible
+    data class Content(override val renderable: @Composable () -> Unit) : Visible
   }
-  data object Undefined: ContentmentState
+
+  data object Undefined : ContentmentState
 }
