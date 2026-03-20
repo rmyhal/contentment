@@ -28,6 +28,11 @@ kotlin {
   }
 }
 
+mavenPublishing {
+  publishToMavenCentral(automaticRelease = true)
+  signAllPublications()
+}
+
 dependencies {
   api(libs.compose.foundation)
   api(libs.compose.ui)
