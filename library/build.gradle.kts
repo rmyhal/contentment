@@ -1,7 +1,7 @@
 plugins {
   alias(libs.plugins.android.library)
-  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.mavenPublish)
+  alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -14,19 +14,17 @@ android {
   buildFeatures {
     compose = true
   }
-  composeOptions {
-    kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-  }
   java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(11))
   }
-  kotlinOptions {
-    compileOptions {
-      freeCompilerArgs += "-Xexplicit-api=strict"
-    }
-  }
   lint {
     abortOnError = true
+  }
+}
+
+kotlin {
+  compilerOptions {
+    freeCompilerArgs.add("-Xexplicit-api=strict")
   }
 }
 
