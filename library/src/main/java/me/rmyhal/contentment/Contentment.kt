@@ -7,9 +7,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 
 /**
- * Manages content loading gracefully with customizable behavior for displaying loading indicator.
- * Allows specifying minimum display time and delay before showing the loading indicator.
- *
  * If the content finishes loading before the [delayMillis] threshold, the [ContentmentScope.indicator] will not be shown.
  * If the content loading exceeds the [delayMillis] threshold, the [ContentmentScope.indicator] will be displayed,
  * and [ContentmentScope.content] will appear only after the [minShowTimeMillis] duration has passed.
