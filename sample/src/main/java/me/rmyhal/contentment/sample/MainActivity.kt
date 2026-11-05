@@ -42,6 +42,7 @@ import me.rmyhal.contentment.Contentment
 import me.rmyhal.contentment.sample.DemoComponent.ContentWithIndicator
 import me.rmyhal.contentment.sample.DemoComponent.IndicatorOnly
 import kotlin.math.roundToLong
+import kotlin.time.Duration.Companion.milliseconds
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,7 +82,7 @@ private fun DemoContent() {
 
     // single-shot auto-hide
     LaunchedEffect(key1 = Unit) {
-      delay(autoHideMillis)
+      delay(autoHideMillis.milliseconds)
       uiState = loadedState
     }
 
@@ -148,7 +149,7 @@ private fun DemoContent() {
         uiState = if (uiState.isLoading()) loadedState else UiState.Loading
         if (uiState.isLoading() && autoHideEnabled) {
           scope.launch {
-            delay(autoHideMillis)
+            delay(autoHideMillis.milliseconds)
             uiState = loadedState
           }
         }
@@ -222,7 +223,7 @@ private fun IndicatorContent() {
     var displaying by remember { mutableLongStateOf(0L) }
     LaunchedEffect(key1 = Unit) {
       while (true) {
-        delay(75)
+        delay(75.milliseconds)
         displaying += 75L
       }
     }

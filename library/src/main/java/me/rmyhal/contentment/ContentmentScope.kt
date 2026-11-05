@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import me.rmyhal.contentment.ContentmentState.Undefined
 import me.rmyhal.contentment.ContentmentState.Visible.Content
 import me.rmyhal.contentment.ContentmentState.Visible.Indicator
+import kotlin.time.Duration.Companion.milliseconds
 
 public class ContentmentScope internal constructor(
   private val scope: CoroutineScope,
@@ -32,7 +33,7 @@ public class ContentmentScope internal constructor(
     if (state is Indicator) return
     state = Indicator(i)
     scope.launch {
-      delay(delayMillis)
+      delay(delayMillis.milliseconds)
       // if we still want to have Indicator after delay
       if (state is Indicator) {
         effectiveState.value = Indicator(i)
@@ -49,7 +50,7 @@ public class ContentmentScope internal constructor(
       effectiveState.value = Content(c)
     } else {
       scope.launch {
-        delay(minShowTimeMillis - diff)
+        delay((minShowTimeMillis - diff).milliseconds)
         effectiveState.value = Content(c)
         startTimeMillis = -1L
       }
