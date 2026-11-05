@@ -1,16 +1,16 @@
 [versions]
 minSdk = "21"
-compileSdk = "36"
-agp = "9.1.0"
-kotlin = "2.3.20"
-kotlin-coroutines-test = "1.10.2"
-core-ktx = "1.18.0"
+compileSdk = "37"
+agp = "9.1.1"
+kotlin = "2.4.21"
+kotlin-coroutines-test = "1.11.0"
+core-ktx = "1.19.1"
 compose-activity = "1.13.0"
-compose-foundation = "1.10.5"
-compose-ui = "1.10.5"
-compose-runtime = "1.10.5"
+compose-foundation = "1.12.1"
+compose-ui = "1.12.1"
+compose-runtime = "1.12.1"
 material3 = "1.4.0"
-mavenPublish = "0.36.0"
+mavenPublish = "0.37.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

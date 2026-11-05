@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
  * Compose adaptation of XML view [androidx.core.widget.ContentLoadingProgressBar].
  *
  * @param loading Whether the content is loading.
- * @param minShowTimeMillis The minimum amount of time to wait before hiding the [indicator].
- * @param delayMillis The amount of time to wait before showing the [indicator].
+ * @param minShowTimeMillis The minimum amount of time to wait before hiding the [indicator]. `0` sets no minimum.
+ * @param delayMillis The amount of time to wait before showing the [indicator]. `0` skips the delay.
  * @param indicator The content to show while the content is loading.
  */
 @Composable
@@ -20,13 +20,7 @@ public fun ContentLoadingIndicator(
   delayMillis: Long = ContentmentDefaults.DelayMillis,
   indicator: @Composable () -> Unit,
 ) {
-  Contentment(
-    minShowTimeMillis = minShowTimeMillis,
-    delayMillis = delayMillis,
-  ) {
-    when (loading) {
-      true -> indicator { indicator() }
-      false -> content {}
-    }
+  if (rememberIndicatorVisible(loading, minShowTimeMillis, delayMillis)) {
+    indicator()
   }
 }
