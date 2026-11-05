@@ -20,7 +20,7 @@ Contentment {
 ## Usage
 
 ```groovy
-implementation "me.rmyhal.contentment:contentment:2.0.1"
+implementation "me.rmyhal.contentment:contentment:2.1.0"
 ```
 
 The `Contentment` composable manages the transition between loading and loaded states, allows specifying minimum display time and delay before showing the loading indicator:
