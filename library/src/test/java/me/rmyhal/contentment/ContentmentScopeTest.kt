@@ -33,18 +33,18 @@ internal class ContentmentScopeTest {
   @Test
   fun `content must be visible instantly if indicator not called`() {
     assertHidden()
-    scope.content { }
+    requestContent()
     assertContent()
   }
 
   @Test
   fun `indicator must be visible for at least minShowTimeMillis after delay passed`() {
     assertHidden()
-    scope.indicator { }
+    requestIndicator()
     assertHidden()
     advanceTime(DELAY_MILLIS + 1L)
     assertIndicator()
-    scope.content { }
+    requestContent()
     assertIndicator()
     advanceTime(MIN_SHOW_TIME_MILLIS + 1L)
     assertContent()
@@ -53,11 +53,11 @@ internal class ContentmentScopeTest {
   @Test
   fun `indicator must not be visible after calling content before delay ends`() {
     assertHidden()
-    scope.indicator { }
+    requestIndicator()
     assertHidden()
     advanceTime(DELAY_MILLIS - 1L)
     assertHidden()
-    scope.content { }
+    requestContent()
     advanceTime(DELAY_MILLIS)
     assertContent()
   }
@@ -65,12 +65,12 @@ internal class ContentmentScopeTest {
   @Test
   fun `content must be visible after minShowTime passes`() {
     assertHidden()
-    scope.indicator { }
+    requestIndicator()
     // because of using fakeClock and adjusting time manually
     // this time adjustment should be done in separate calls
     // so, new currentTimeMillis is picked up by `scope`
     advanceTime(DELAY_MILLIS + 1L)
-    scope.content { }
+    requestContent()
     assertIndicator()
     advanceTime(MIN_SHOW_TIME_MILLIS + 1L)
     assertContent()
@@ -78,9 +78,9 @@ internal class ContentmentScopeTest {
 
   @Test
   fun `multiple indicator call doesn't reset delay`() {
-    scope.indicator { }
+    requestIndicator()
     advanceTime(DELAY_MILLIS - 1L)
-    scope.indicator { }
+    requestIndicator()
     advanceTime(2L)
     assertIndicator()
   }
@@ -88,18 +88,18 @@ internal class ContentmentScopeTest {
   @Test
   fun `multiple indicator & content cycles work correct`() {
     assertHidden()
-    scope.indicator { }
+    requestIndicator()
     advanceTime(DELAY_MILLIS + 1L)
     advanceTime(MIN_SHOW_TIME_MILLIS)
     assertIndicator()
-    scope.content { }
+    requestContent()
     assertContent()
-    scope.indicator { }
+    requestIndicator()
     assertContent()
     advanceTime(DELAY_MILLIS + 1L)
     advanceTime(MIN_SHOW_TIME_MILLIS)
     assertIndicator()
-    scope.content { }
+    requestContent()
     assertContent()
   }
 
@@ -108,26 +108,36 @@ internal class ContentmentScopeTest {
     val halfMinShowTime = MIN_SHOW_TIME_MILLIS / 2L
 
     assertHidden()
-    scope.indicator { }
+    requestIndicator()
     advanceTime(DELAY_MILLIS + 1L)
     advanceTime(halfMinShowTime)
     assertIndicator()
-    scope.content { }
+    requestContent()
     assertIndicator()
     advanceTime(halfMinShowTime + 1L)
     assertContent()
   }
 
   private fun assertHidden() {
-    assertThat(scope.effectiveState.value).isEqualTo(Undefined)
+    assertThat(scope.resolve()).isEqualTo(Undefined)
   }
 
   private fun assertIndicator() {
-    assertThat(scope.effectiveState.value).isInstanceOf(Visible.Indicator::class.java)
+    assertThat(scope.resolve()).isInstanceOf(Visible.Indicator::class.java)
   }
 
   private fun assertContent() {
-    assertThat(scope.effectiveState.value).isInstanceOf(Visible.Content::class.java)
+    assertThat(scope.resolve()).isInstanceOf(Visible.Content::class.java)
+  }
+
+  private fun requestIndicator() {
+    scope.indicator { }
+    scope.commit()
+  }
+
+  private fun requestContent() {
+    scope.content { }
+    scope.commit()
   }
 
   private fun advanceTime(millis: Long) {

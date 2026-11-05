@@ -63,6 +63,35 @@ ContentLoadingIndicator(
 }
 ```
 
+## Animated transitions
+
+`rememberIndicatorVisible` and `rememberContentment` apply `delayMillis` and `minShowTimeMillis` to a value:
+
+```kotlin
+AnimatedVisibility(
+  visible = rememberIndicatorVisible(loading),
+  enter = fadeIn() + scaleIn(),
+  exit = fadeOut(),
+) {
+  CircularProgressIndicator()
+}
+```
+
+`rememberContentment` returns `null` while the first state is loading and `delayMillis` hasn't passed:
+
+```kotlin
+val shown = rememberContentment(uiState, isLoading = { it is Loading })
+AnimatedContent(targetState = shown) { state ->
+  when (state) {
+    null -> Unit
+    is Loading -> CircularProgressIndicator()
+    is Loaded -> LoadedContent(state)
+  }
+}
+```
+
+`minShowTimeMillis` counts from when the loading state is first returned. Exit transitions start after it.
+
 ## License 
 
 ```

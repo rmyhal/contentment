@@ -1,8 +1,7 @@
 package me.rmyhal.contentment
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 
@@ -12,7 +11,9 @@ import androidx.compose.runtime.rememberCoroutineScope
  * and [ContentmentScope.content] will appear only after the [minShowTimeMillis] duration has passed.
  *
  * @param minShowTimeMillis The minimum amount of time to wait before hiding the [ContentmentScope.indicator].
+ * `0` sets no minimum.
  * @param delayMillis The amount of time to wait before showing the [ContentmentScope.indicator].
+ * `0` skips the delay.
  * @param builder a wrapper to provide `@Composable` content for [ContentmentScope.content] and [ContentmentScope.indicator].
  */
 @Composable
@@ -21,23 +22,22 @@ public fun Contentment(
   delayMillis: Long = ContentmentDefaults.DelayMillis,
   builder: ContentmentScope.() -> Unit,
 ) {
-  val state by rememberContentmentState(
+  val contentmentScope = rememberContentmentScope(
     minShowTimeMillis = minShowTimeMillis,
     delayMillis = delayMillis,
-    builder = builder,
-  )
-  when (val value = state) {
+  ).apply(builder)
+  SideEffect { contentmentScope.commit() }
+  when (val value = contentmentScope.resolve()) {
     is ContentmentState.Visible -> value.renderable()
     is ContentmentState.Undefined -> Unit
   }
 }
 
 @Composable
-internal fun rememberContentmentState(
-  minShowTimeMillis: Long = ContentmentDefaults.MinShowTimeMillis,
-  delayMillis: Long = ContentmentDefaults.DelayMillis,
-  builder: ContentmentScope.() -> Unit,
-): State<ContentmentState> {
+private fun rememberContentmentScope(
+  minShowTimeMillis: Long,
+  delayMillis: Long,
+): ContentmentScope {
   val scope = rememberCoroutineScope()
   return remember(key1 = minShowTimeMillis, key2 = delayMillis) {
     ContentmentScope(
@@ -46,6 +46,4 @@ internal fun rememberContentmentState(
       delayMillis = delayMillis,
     )
   }
-    .apply(builder)
-    .effectiveState
 }

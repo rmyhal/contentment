@@ -2,59 +2,47 @@ package me.rmyhal.contentment
 
 import android.os.SystemClock
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import me.rmyhal.contentment.ContentmentState.Undefined
 import me.rmyhal.contentment.ContentmentState.Visible.Content
 import me.rmyhal.contentment.ContentmentState.Visible.Indicator
-import kotlin.time.Duration.Companion.milliseconds
 
 public class ContentmentScope internal constructor(
-  private val scope: CoroutineScope,
-  private val minShowTimeMillis: Long,
-  private val delayMillis: Long,
-  private val currentTimeMillis: () -> Long = { SystemClock.elapsedRealtime() },
+  scope: CoroutineScope,
+  minShowTimeMillis: Long,
+  delayMillis: Long,
+  currentTimeMillis: () -> Long = { SystemClock.elapsedRealtime() },
 ) {
-  internal var effectiveState = mutableStateOf<ContentmentState>(Undefined)
-  private var state by mutableStateOf<ContentmentState>(Undefined)
-  private var startTimeMillis by mutableLongStateOf(-1L)
+  private val timer = ContentmentTimer<ContentmentState.Visible>(
+    scope = scope,
+    minShowTimeMillis = minShowTimeMillis,
+    delayMillis = delayMillis,
+    currentTimeMillis = currentTimeMillis,
+  )
 
-  init {
-    require(minShowTimeMillis > 0L) { "minShowTimeMillis must be > 0" }
-    require(delayMillis > 0L) { "delayMillis must be > 0" }
-  }
+  /** The latest request from [indicator] or [content]. Applied to the timer by [commit]. */
+  private var requested: ContentmentState.Visible? = null
 
   public fun indicator(i: @Composable () -> Unit) {
-    if (state is Indicator) return
-    state = Indicator(i)
-    scope.launch {
-      delay(delayMillis.milliseconds)
-      // if we still want to have Indicator after delay
-      if (state is Indicator) {
-        effectiveState.value = Indicator(i)
-        startTimeMillis = currentTimeMillis()
-      }
-    }
+    // Each recomposition passes a new lambda instance, which would otherwise count as a new loading value.
+    if (requested is Indicator) return
+    requested = Indicator(i)
   }
 
   public fun content(c: @Composable () -> Unit) {
-    state = Content(c)
-    if (effectiveState.value == state) return
-    val diff = currentTimeMillis() - startTimeMillis
-    if (diff >= minShowTimeMillis || startTimeMillis == -1L) {
-      effectiveState.value = Content(c)
-    } else {
-      scope.launch {
-        delay((minShowTimeMillis - diff).milliseconds)
-        effectiveState.value = Content(c)
-        startTimeMillis = -1L
-      }
-    }
+    requested = Content(c)
+  }
+
+  /** What to show for the latest request right now. Doesn't change state. */
+  internal fun resolve(): ContentmentState {
+    val request = requested ?: return Undefined
+    return timer.resolve(request, isLoading = request is Indicator) ?: Undefined
+  }
+
+  /** Applies the latest request to the timer. */
+  internal fun commit() {
+    val request = requested ?: return
+    timer.update(request, isLoading = request is Indicator)
   }
 }
 
